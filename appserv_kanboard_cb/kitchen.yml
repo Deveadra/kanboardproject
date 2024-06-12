@@ -1,6 +1,22 @@
 ---
 driver:
-  name: vagrant
+  name: ec2
+  region: us-east-1
+  shared_credentials_profile: ec2-for-chef-dev-limitedaccess
+  instance_type: t2.micro
+  retryable_tries: 120
+  security_group_filter:
+    tag: Project
+    value: ChefDevelopment
+  subnet_filter:
+    tag: Project
+    value: ChefDevelopment
+  tags:
+    Name: cookbook-appserv_kanboard
+    Project: Kanban
+    jw:project: chef/cookbook-appserv_kanboard
+    jw:stage: <%= ENV.fetch('CI_JOB_STAGE', 'lab') %>
+    jw:owner: <%= ENV.fetch('USER', ENV.fetch('USERNAME', 'gitlab')) %>
 
 ## The forwarded_port port feature lets you connect to ports on the VM guest
 ## via localhost on the host.
@@ -21,8 +37,7 @@ verifier:
   name: inspec
 
 platforms:
-  - name: ubuntu-20.04
-  - name: centos-8
+  - name: ubuntu-22.04
 
 suites:
   - name: default
