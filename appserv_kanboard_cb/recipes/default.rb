@@ -9,12 +9,7 @@ apt_update 'update_sources' do
 end
 
 # Install Apache
-package 'apache2' do
-  action :install
-end
-
-# Install PHP
-package 'php' do
+package 'apache2, 'php' do
   action :install
 end
 
