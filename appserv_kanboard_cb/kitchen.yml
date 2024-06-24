@@ -1,31 +1,48 @@
 ---
 driver:
-  name: vagrant
+  name: ec2
+  region: us-east-1
+  #aws_ssh_key_id: kitchen-defaultubuntu2048-devaedra-DESKTOPCHRONOS
+  shared_credentials_profile: ec2-for-chef-dev-limitedaccess
+  instance_type: t2.micro
+  retryable_tries: 120
+  security_group_filter:
+    tag: Project
+    value: ChefDevelopment
+  subnet_filter:
+    tag: Project
+    value: ChefDevelopment
+  tags:
+    Name: cookbook-APPSERV
+    Project: ChefDevelopment
+    jw:project: chef/cookbook-bethel_learn_apache2
+    jw:stage: lab
+    jw:owner: devaedra
 
-## The forwarded_port port feature lets you connect to ports on the VM guest
-## via localhost on the host.
-## see also: https://www.vagrantup.com/docs/networking/forwarded_ports
-
-#  network:
-#    - ["forwarded_port", {guest: 80, host: 8080}]
+transport:
+  name: ssh
+  username: ubuntu
+  #ssh_key: /home/devaedra/src/kanboardproject/appserv_kanboard_cb/.kitchen/default-ubuntu-2204.pem
+  connection_timeout: 15
+  connection_retries: 5
+  max_wait_until_ready: 600
 
 provisioner:
-  name: chef_zero
-
-  ## product_name and product_version specifies a specific Chef product and version to install.
-  ## see the Chef documentation for more details: https://docs.chef.io/workstation/config_yml_kitchen/
-  #  product_name: chef
-  #  product_version: 17
+  name: chef_infra
+  chef_client_path: '/bin/chef-client'
 
 verifier:
   name: inspec
 
 platforms:
-  - name: ubuntu-20.04
-  - name: centos-8
+  - name: ubuntu-22.04
+    driver:
+      user_data: allow.rsa.sh
 
 suites:
   - name: default
+    run_list:
+      - recipe[appserv_kanboard_cb::default]
     verifier:
       inspec_tests:
         - test/integration/default
