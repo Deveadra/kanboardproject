@@ -1,0 +1,23 @@
+# Apache2 Configuration
+
+<VirtualHost *:80>
+  ServerAdmin tycarroll@bethel.jw.org
+  DocumentRoot /var/www/kanboard
+  # ServerName your-domain.com
+
+  # Directory settings for Kanboard
+  <Directory /var/www/kanboard>
+      Options Indexes FollowSymLinks
+      AllowOverride All
+      Require all granted
+  </Directory>
+
+  #Log file locations
+  ErrorLog ${APACHE_LOG_DIR}/kanboard_error.log
+  CustomLog ${APACHE_LOG_DIR}/kanboard_access.log combined
+
+# Ensures that the PHP files are handled correctly by the PHP handler
+  <FilesMatch \.php$>
+    SetHandler application/x-httpd-php
+  </FilesMatch>
+</VirtualHost>
