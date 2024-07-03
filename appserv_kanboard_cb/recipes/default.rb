@@ -15,12 +15,12 @@ apt_update 'update_sources' do
 end
 
 # Install Apache and PHP
-package [apache2] do
+apt_package ['apache2', 'php'] do
   action :install
 end
 
 # Install Install additional PHP extensions required modules for downloading/handling/running Kanboard
-package %w[php php-fpm libapache2-mod-php php-cli php-mbstring php-sqlite3 php-opcache php-json php-mysql php-pgsql php-ldap php-gd php-xml unzip wget] do
+apt_package %w[libapache2-mod-php php-cli php-mbstring php-sqlite3 php-opcache php-json php-mysql php-pgsql php-ldap php-gd php-xml unzip wget] do
   action :install
 end
 
@@ -30,10 +30,20 @@ service 'apache2' do
   retries 5
 end
 
-# Ensure PHP-FPM service is enabled and running
-service 'php7.4-fpm' do
-  action [:enable, :start]
+# Enable the PHP module in Apache
+execute 'enable_php_module' do
+  command 'a2enmod php8.1'
+  notifies :restart, 'service[apache2]', :immediately
 end
+
+=begin
+%w[libapache2-mod-php php-cli php-mbstring php-sqlite3 php-opcache php-json php-mysql php-pgsql php-ldap php-gd php-xml unzip wget].each do |service_name|
+  service service_name do
+    action [:enable, :start]
+    retries 5
+  end
+end
+=end
 
 # Download the Kanboard .zip from GitHub to temp folder. This should automatically detect the latest version!
 #environmental variables?
@@ -46,14 +56,23 @@ end
 execute 'unzip_kanboard' do
   command "unzip -o #{kanboard_archive} -d /var/www/"
   not_if { ::File.exist?(kanboard_dir) }
+  notifies :run, 'execute[change_kanboard_ownership]', :immediately
 end
 
 execute 'move_kanboard' do
   command "mv #{kanboard_unzipped_dir} #{kanboard_dir}"
   not_if { ::File.exist?(kanboard_dir) }
   only_if { ::File.exist?(kanboard_unzipped_dir) }
+  notifies :run, 'execute[change_kanboard_ownership]', :immediately
 end
 
+# Change ownership of the Kanboard directory
+execute 'change_kanboard_ownership' do
+  command "chown -R www-data:www-data #{kanboard_dir}"
+  action :nothing
+end
+
+=begin
 # Change ownership of the Kanboard directory
 directory kanboard_dir do
   owner 'www-data'
@@ -61,13 +80,7 @@ directory kanboard_dir do
   recursive true
   action :create
 end
-
-directory '/var/www/kanboard/data' do
-  owner 'www-data'
-  group 'www-data'
-  recursive true
-  action :create
-end
+=end
 
 require_relative '../libraries/path_helper'
 
