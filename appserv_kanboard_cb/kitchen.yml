@@ -2,7 +2,7 @@
 driver:
   name: ec2
   region: us-east-1
-  #aws_ssh_key_id: kitchen-defaultubuntu2048-devaedra-DESKTOPCHRONOS
+  aws_ssh_key_id: kitchen-defaultubuntu2204-devaedra-Chronos
   shared_credentials_profile: ec2-for-chef-dev-limitedaccess
   instance_type: t2.micro
   retryable_tries: 120
@@ -22,7 +22,7 @@ driver:
 transport:
   name: ssh
   username: ubuntu
-  #ssh_key: /home/devaedra/src/kanboardproject/appserv_kanboard_cb/.kitchen/default-ubuntu-2204.pem
+  ssh_key: '~/.ssh/kitchen-defaultubuntu2204-devaedra-Chronos.pem'
   connection_timeout: 15
   connection_retries: 5
   max_wait_until_ready: 600
