@@ -15,12 +15,12 @@ apt_update 'update_sources' do
 end
 
 # Install Apache and PHP
-package ['apache2', 'php'] do
+package [apache2] do
   action :install
 end
 
 # Install Install additional PHP extensions required modules for downloading/handling/running Kanboard
-package %w[php-fpm libapache2-mod-php php-cli php-mbstring php-sqlite3 php-opcache php-json php-mysql php-pgsql php-ldap php-gd php-xml unzip wget] do
+package %w[php php-fpm libapache2-mod-php php-cli php-mbstring php-sqlite3 php-opcache php-json php-mysql php-pgsql php-ldap php-gd php-xml unzip wget] do
   action :install
 end
 
@@ -70,6 +70,12 @@ directory '/var/www/kanboard/data' do
 end
 
 require_relative '../libraries/path_helper'
+
+# Allow 'Apache Full' through the firewall
+execute 'allow-apache-full' do
+  command 'ufw allow "Apache Full"'
+  not_if 'ufw status | grep -q "Apache Full"'
+end
 
 =begin
 # Install InSpec
