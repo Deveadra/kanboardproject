@@ -20,14 +20,19 @@ package ['apache2', 'php'] do
 end
 
 # Install Install additional PHP extensions required modules for downloading/handling/running Kanboard
-package %w[libapache2-mod-php php-cli php-mbstring php-sqlite3 php-opcache php-json php-mysql php-pgsql php-ldap php-gd php-xml unzip wget] do
+package %w[php-fpm libapache2-mod-php php-cli php-mbstring php-sqlite3 php-opcache php-json php-mysql php-pgsql php-ldap php-gd php-xml unzip wget] do
   action :install
 end
 
-# Ensure the Apache service has started and is enabled
+# Ensure the Apache service is enabled and running
 service 'apache2' do
   action [:enable, :start]
   retries 5
+end
+
+# Ensure PHP-FPM service is enabled and running
+service 'php7.4-fpm' do
+  action [:enable, :start]
 end
 
 # Download the Kanboard .zip from GitHub to temp folder. This should automatically detect the latest version!
@@ -51,6 +56,13 @@ end
 
 # Change ownership of the Kanboard directory
 directory kanboard_dir do
+  owner 'www-data'
+  group 'www-data'
+  recursive true
+  action :create
+end
+
+directory '/var/www/kanboard/data' do
   owner 'www-data'
   group 'www-data'
   recursive true
